@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:battery_plus/battery_plus.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:feather_icons/feather_icons.dart';
 import 'package:flashlight/constants/color_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:get/get.dart';
 import 'package:in_app_review/in_app_review.dart';
+import 'package:intl/intl.dart';
 import 'package:torch_controller/torch_controller.dart';
 
 import '../constants/font_constants.dart';
@@ -90,6 +92,9 @@ class FlashController extends GetxController{
         children: [
           GestureDetector(
             onTap: (){
+              if(!isFlashActive){
+                logflashbuttontap();
+              }
               toggleflashlight();
             },
             child: Container(
@@ -177,6 +182,7 @@ class FlashController extends GetxController{
         children: [
           GestureDetector(
             onTap: (){
+              logtorchmode();
               screenmodefalse();
             },
             child: Container(
@@ -190,6 +196,7 @@ class FlashController extends GetxController{
           ),
           GestureDetector(
             onTap: (){
+              logscreenflashmode();
               screenmodetrue();
             },
             child: Container(
@@ -287,4 +294,60 @@ class FlashController extends GetxController{
       inAppReview.requestReview();
     }
   }
+  void logflashbuttontap()async{
+    // Get reference to Firestore collection
+    var collectionRef = FirebaseFirestore.instance.collection('Flashtaps');
+    var doc = await collectionRef.doc(DateFormat.yMMMMd('en_US').format(DateTime.now())).get();
+    if(doc.exists){
+      await FirebaseFirestore.instance.collection("Flashtaps").doc(
+          DateFormat.yMMMMd('en_US').format(DateTime.now())
+      ).update({"numberoftaps":FieldValue.increment(1)});
+    }else{
+      await FirebaseFirestore.instance.collection("Flashtaps").doc(
+          DateFormat.yMMMMd('en_US').format(DateTime.now())
+      ).set({"numberoftaps":1});
+    }  }
+
+
+  void logtorchmode()async{
+    // Get reference to Firestore collection
+    var collectionRef = FirebaseFirestore.instance.collection('Torch Mode');
+    var doc = await collectionRef.doc(DateFormat.yMMMMd('en_US').format(DateTime.now())).get();
+    if(doc.exists){
+      await FirebaseFirestore.instance.collection("Torch Mode").doc(
+          DateFormat.yMMMMd('en_US').format(DateTime.now())
+      ).update({"numberoftaps":FieldValue.increment(1)});
+    }else{
+      await FirebaseFirestore.instance.collection("Torch Mode").doc(
+          DateFormat.yMMMMd('en_US').format(DateTime.now())
+      ).set({"numberoftaps":1});
+    }  }
+
+  void logscreenflashmode()async{
+    // Get reference to Firestore collection
+    var collectionRef = FirebaseFirestore.instance.collection('Screen Mode');
+    var doc = await collectionRef.doc(DateFormat.yMMMMd('en_US').format(DateTime.now())).get();
+    if(doc.exists){
+      await FirebaseFirestore.instance.collection("Screen Mode").doc(
+          DateFormat.yMMMMd('en_US').format(DateTime.now())
+      ).update({"numberoftaps":FieldValue.increment(1)});
+    }else{
+      await FirebaseFirestore.instance.collection("Screen Mode").doc(
+          DateFormat.yMMMMd('en_US').format(DateTime.now())
+      ).set({"numberoftaps":1});
+    }  }
+
+  void logsettingstap()async{
+    // Get reference to Firestore collection
+    var collectionRef = FirebaseFirestore.instance.collection('Settings Tap');
+    var doc = await collectionRef.doc(DateFormat.yMMMMd('en_US').format(DateTime.now())).get();
+    if(doc.exists){
+      await FirebaseFirestore.instance.collection("Settings Tap").doc(
+          DateFormat.yMMMMd('en_US').format(DateTime.now())
+      ).update({"numberoftaps":FieldValue.increment(1)});
+    }else{
+      await FirebaseFirestore.instance.collection("Settings Tap").doc(
+          DateFormat.yMMMMd('en_US').format(DateTime.now())
+      ).set({"numberoftaps":1});
+    }  }
 }

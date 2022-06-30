@@ -21,9 +21,9 @@ class SettingsController extends GetxController {
 
   void initializebools()async{
     final prefs= await SharedPreferences.getInstance();
-    final switchsoundstat=prefs.getBool('switchsound')!;
-    final turnonatstartupstat=prefs.getBool('turnonatstartup')!;
-    final turnoffatstartupstat=prefs.getBool('turnoffatstartup')!;
+    final switchsoundstat=prefs.getBool('switchsound');
+    final turnonatstartupstat=prefs.getBool('turnonatstartup');
+    final turnoffatstartupstat=prefs.getBool('turnoffatstartup');
     if(switchsoundstat==null){
       switchsoundstatus=true;
     }else{

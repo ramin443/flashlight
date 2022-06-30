@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart' as Firestore;
 import 'package:feather_icons/feather_icons.dart';
 import 'package:flashlight/constants/color_constants.dart';
 import 'package:flashlight/constants/font_constants.dart';
@@ -54,12 +55,13 @@ class LandingPage extends StatelessWidget {
                     elevation: 0,
                     centerTitle: true,
                     title: Container(
-                      child: Icon(
-                        FeatherIcons.battery,
-                        size: screenwidth*0.0535,
-                        color: Colors.transparent,
+                        child: Icon(
+                          FeatherIcons.battery,
+                          size: screenwidth*0.0535,
+                          color: Colors.transparent,
+                        ),
                       ),
-                    ),
+
                     actions: [
 
 
@@ -82,12 +84,12 @@ class LandingPage extends StatelessWidget {
                     elevation: 0,
                     centerTitle: true,
                     title: Container(
-                      child: Icon(
-                        FeatherIcons.battery,
-                        size: screenwidth*0.0535,
-                        color: Colors.white,
+                        child: Icon(
+                          FeatherIcons.battery,
+                          size: screenwidth*0.0535,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
                     actions: [
                       PopupMenuButton(
                           color: Colors.white,
@@ -146,11 +148,13 @@ class LandingPage extends StatelessWidget {
                             ),
                             PopupMenuItem(
                               onTap: (){
+                                flashcontroller.logsettingstap();
                                 Navigator.push(context, MaterialPageRoute(builder: (context)
                                 =>Settings()));
                               },
                               child: GestureDetector(
                                 onTap: (){
+                                  flashcontroller.logsettingstap();
                                   Navigator.push(context, MaterialPageRoute(builder: (context)
                                   =>Settings()));
                               },

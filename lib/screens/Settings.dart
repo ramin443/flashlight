@@ -5,7 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 class Settings extends StatelessWidget {
-  const Settings({Key? key}) : super(key: key);
+   Settings({Key? key}) : super(key: key);
+  final SettingsController settingsController = Get.put(SettingsController());
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +14,7 @@ class Settings extends StatelessWidget {
     return
       GetBuilder<SettingsController>(
           initState: (v){
-
+            settingsController.initializebools();
           },
           init: SettingsController(),
           builder: (settingscontroller){
@@ -48,8 +49,7 @@ class Settings extends StatelessWidget {
             settingscontroller.generaltypetitle(context),
             settingscontroller.generalrow(context, "Switch Sound"),
             settingscontroller.generalrow(context, "Turn on at startup"),
-            settingscontroller.generalrow(context, "Turn off at startup"),
-            settingscontroller.generalrow(context, "Show battery status"),
+            settingscontroller.generalrow(context, "Turn off at exit"),
             settingscontroller.abouttypetitle(context),
             settingscontroller.aboutrow(context)
           ],

@@ -3,9 +3,10 @@ import 'dart:async';
 import 'package:battery_plus/battery_plus.dart';
 import 'package:feather_icons/feather_icons.dart';
 import 'package:flashlight/constants/color_constants.dart';
-import 'package:flashlight/services/flashlight_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:get/get.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:torch_controller/torch_controller.dart';
 
 import '../constants/font_constants.dart';
@@ -19,6 +20,7 @@ class FlashController extends GetxController{
   BatteryState batteryState = BatteryState.full;
   bool hasFlashlight=true;
   final torchController = TorchController();
+  final InAppReview inAppReview = InAppReview.instance;
 
   void screenmodetrue(){
     screenmode=true;
@@ -111,7 +113,7 @@ class FlashController extends GetxController{
                   ),
                   child: Center(
                     child: RotatedBox(
-                      quarterTurns: 3,
+                      quarterTurns: isFlashActive?3:2,
                       child: Container(
                       width: screenwidth*0.0097,height: screenwidth*0.0609,
                       decoration: BoxDecoration(
@@ -265,5 +267,24 @@ class FlashController extends GetxController{
         ),
       ),
     );
+  }
+  void sendfeedback()async{
+    final Email send_email = Email(
+      body: 'Your Feedback',
+      subject: 'Feedback- Flashlight',
+      recipients: ['piperdownloader@gmail.com'],
+      isHTML: false,
+    );
+    await FlutterEmailSender.send(send_email);
+  }
+
+  onreviewboxtapped()async{
+    inAppReview.openStoreListing();
+    update();
+  }
+  requestreview()async{
+    if (await inAppReview.isAvailable()) {
+      inAppReview.requestReview();
+    }
   }
 }

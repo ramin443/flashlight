@@ -38,6 +38,9 @@ dependencies:
   feather_icons: ^1.2.0
   torch_controller: ^1.0.0
   battery_plus:
+  shared_preferences: ^2.0.15
+  flutter_email_sender: ^5.1.0
+  in_app_review: ^2.0.4
 
 
 dev_dependencies:

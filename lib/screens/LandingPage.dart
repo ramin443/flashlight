@@ -3,6 +3,7 @@ import 'package:flashlight/constants/color_constants.dart';
 import 'package:flashlight/constants/font_constants.dart';
 import 'package:flashlight/constants/image_constants.dart';
 import 'package:flashlight/getxcontrollers/flash_controller.dart';
+import 'package:flashlight/getxcontrollers/settings_controller.dart';
 import 'package:flashlight/screens/Settings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,6 +11,7 @@ import 'package:get/get.dart';
 class LandingPage extends StatelessWidget {
    LandingPage({Key? key}) : super(key: key);
   final FlashController flashController = Get.put(FlashController());
+   final SettingsController settingsController = Get.put(SettingsController());
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +21,10 @@ class LandingPage extends StatelessWidget {
         initState: (v) {
           flashController.monitorbattery();
           flashController.checkifflashlightexists();
+          settingsController.initializebools();
+          if(settingsController.turnonatstartupstatus){
+            flashController.toggleflashlight();
+          }
         },
         builder: (flashcontroller) {
           return Scaffold(
@@ -88,6 +94,9 @@ class LandingPage extends StatelessWidget {
                           elevation: 40,
                           itemBuilder:(context) => [
                             PopupMenuItem(
+                              onTap:(){
+                                flashcontroller.onreviewboxtapped();
+                              },
                               child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -109,24 +118,29 @@ class LandingPage extends StatelessWidget {
                             ),
                             PopupMenuItem(
                               onTap: (){
-
+                                flashcontroller.sendfeedback();
                               },
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(FeatherIcons.edit3,
-                                  color: Color(0xff374957),
-                                  size:screenwidth*0.0426,)
-                                 ,
-                                  Container(
-                                    margin: EdgeInsets.only(left: screenwidth*0.0533),
-                                    child: Text("Feedback",style: TextStyle(
-                                        fontFamily: interregular,
-                                        color: Colors.black,
-                                        fontSize:  screenwidth*0.0340
-                                    ),),
-                                  )
-                                ],
+                              child: GestureDetector(
+                                onTap: (){
+                                  flashcontroller.sendfeedback();
+                                },
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(FeatherIcons.edit3,
+                                    color: Color(0xff374957),
+                                    size:screenwidth*0.0426,)
+                                   ,
+                                    Container(
+                                      margin: EdgeInsets.only(left: screenwidth*0.0533),
+                                      child: Text("Feedback",style: TextStyle(
+                                          fontFamily: interregular,
+                                          color: Colors.black,
+                                          fontSize:  screenwidth*0.0340
+                                      ),),
+                                    )
+                                  ],
+                                ),
                               ),
                               value: 2,
                             ),

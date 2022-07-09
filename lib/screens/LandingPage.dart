@@ -8,6 +8,7 @@ import 'package:flashlight/getxcontrollers/settings_controller.dart';
 import 'package:flashlight/screens/Settings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class LandingPage extends StatelessWidget {
    LandingPage({Key? key}) : super(key: key);
@@ -26,6 +27,8 @@ class LandingPage extends StatelessWidget {
           if(settingsController.turnonatstartupstatus){
             flashController.toggleflashlight();
           }
+          flashController.initializebanner();
+          flashController.loadrewardedad();
         },
         builder: (flashcontroller) {
           return Scaffold(
@@ -152,6 +155,7 @@ class LandingPage extends StatelessWidget {
                                 Navigator.push(context, MaterialPageRoute(builder: (context)
                                 =>Settings()));
                               },
+
                               child: GestureDetector(
                                 onTap: (){
                                   flashcontroller.logsettingstap();
@@ -200,7 +204,17 @@ class LandingPage extends StatelessWidget {
                   flashcontroller.showscreenflash?
                       flashcontroller.emptyflashmodes(context):
                   flashcontroller.flashmodes(context),
-                  bottomNavigationBar: Container(
+                  bottomNavigationBar: flashcontroller.isbanneradloaded?
+                  Container(
+                    width: screenwidth,
+                    height: screenwidth*0.2433,
+                    child: Container(
+                      height: flashcontroller.bannerAd.size.height.toDouble(),
+                      width: flashcontroller.bannerAd.size.width.toDouble(),
+                      child: AdWidget(ad: flashcontroller.bannerAd,),
+                    ),
+                  ):
+                  Container(
                     width: screenwidth,
                     height: screenwidth*0.2433,
                     color: Colors.transparent,

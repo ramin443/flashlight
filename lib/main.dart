@@ -3,11 +3,13 @@ import 'package:flashlight/getxcontrollers/settings_controller.dart';
 import 'package:flashlight/screens/LandingPage.dart';
 import 'package:flashlight/screens/Settings.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:torch_controller/torch_controller.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  MobileAds.instance.initialize();
   TorchController().initialize();
   runApp(const MyApp());
 }

@@ -29,6 +29,10 @@ class LandingPage extends StatelessWidget {
           }
           flashController.initializebanner();
           flashController.loadrewardedad();
+          flashController.turnonatstartup();
+        },
+        dispose: (v){
+          flashController.turnoffatstartup();
         },
         builder: (flashcontroller) {
           return Scaffold(
@@ -151,15 +155,18 @@ class LandingPage extends StatelessWidget {
                             ),
                             PopupMenuItem(
                               onTap: (){
-                                flashcontroller.logsettingstap();
+                              //  flashcontroller.logsettingstap();
+                                flashcontroller.sendAnalyticsEvent(eventName: "SettingsTap",
+                                clickevent: "Tapped");
                                 Navigator.push(context, MaterialPageRoute(builder: (context)
                                 =>Settings()));
                               },
 
                               child: GestureDetector(
                                 onTap: (){
-                                  flashcontroller.logsettingstap();
-                                  Navigator.push(context, MaterialPageRoute(builder: (context)
+//                                  flashcontroller.logsettingstap();
+                                  flashcontroller.sendAnalyticsEvent(eventName: "SettingsTap",
+                                      clickevent: "Tapped");                                Navigator.push(context, MaterialPageRoute(builder: (context)
                                   =>Settings()));
                               },
                                 child: Row(
@@ -236,4 +243,5 @@ class LandingPage extends StatelessWidget {
           );
         });
   }
+
 }

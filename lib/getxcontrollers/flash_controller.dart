@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:battery_plus/battery_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:feather_icons/feather_icons.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flashlight/constants/color_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
@@ -9,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:torch_controller/torch_controller.dart';
 import '../constants/font_constants.dart';
 
@@ -28,6 +30,17 @@ class FlashController extends GetxController {
   bool isbanneradloaded = false;
   bool isrewardadloaded = false;
   int flashbuttontapped = 0;
+  final FirebaseAnalytics _analytics = FirebaseAnalytics();
+
+  Future sendAnalyticsEvent(
+      {String? eventName, String? clickevent}) async {
+    await _analytics.logEvent(
+      name: '${eventName}',
+      parameters: <String, dynamic>{
+        'clickEvent': "User has clicked"
+      },
+    );
+  }
 
   void incrementflashbuttontaps() async {
     if (flashbuttontapped > 4) {
@@ -35,6 +48,7 @@ class FlashController extends GetxController {
       //display popup app skippable in 5 seconds
     }
     flashbuttontapped++;
+    sendAnalyticsEvent(eventName: "flashbuttonclicks",clickevent: "Tapped");
     update();
   }
 
@@ -160,6 +174,8 @@ class FlashController extends GetxController {
           GestureDetector(
             onTap: () {
               if (!isFlashActive) {
+                sendAnalyticsEvent(eventName: "FlashMode",
+                    clickevent: "Tapped");
                 logflashbuttontap();
               }
               toggleflashlight();
@@ -257,7 +273,9 @@ class FlashController extends GetxController {
         children: [
           GestureDetector(
             onTap: () {
-              logtorchmode();
+              sendAnalyticsEvent(eventName: "TorchMode",
+                  clickevent: "Tapped");
+        //      logtorchmode();
               screenmodefalse();
             },
             child: Container(
@@ -273,7 +291,9 @@ class FlashController extends GetxController {
           ),
           GestureDetector(
             onTap: () {
-              logscreenflashmode();
+     //         logscreenflashmode();
+              sendAnalyticsEvent(eventName: "FlashMode",
+                  clickevent: "Tapped");
               screenmodetrue();
             },
             child: Container(
@@ -450,6 +470,7 @@ class FlashController extends GetxController {
           .doc(DateFormat.yMMMMd('en_US').format(DateTime.now()))
           .set({"numberoftaps": 1});
     }
+
   }
 
   Widget banneradbottom(BuildContext context) {
@@ -461,5 +482,48 @@ class FlashController extends GetxController {
         ad: bannerAd,
       ),
     );
+  }
+  Future<bool> getswitchsound()async{
+    final prefs= await SharedPreferences.getInstance();
+    final switchsound=prefs.getBool('switchsound');
+    if(switchsound==null){
+      return true;
+    }
+    return switchsound;
+  }
+  Future<bool> getturnonatstartup()async{
+    final prefs= await SharedPreferences.getInstance();
+    final turnon=prefs.getBool('turnonatstartup');
+    if(turnon==null){
+      return true;
+    }
+    return turnon;
+  }
+  Future<bool> getturnoffatstartup()async{
+    final prefs= await SharedPreferences.getInstance();
+    final turnoff=prefs.getBool('turnoffatstartup');
+    if(turnoff==null){
+      return true;
+    }
+    return turnoff;
+  }
+
+  void turnonatstartup()async{
+    final prefs= await SharedPreferences.getInstance();
+    final turnoff=prefs.getBool('turnonatstartup');
+    bool? isturnon=turnoff;
+    if(isturnon!){
+      toggleflashlight();
+    }
+  }
+  void turnoffatstartup()async{
+    final prefs= await SharedPreferences.getInstance();
+    final turnoff=prefs.getBool('turnoffatstartup');
+    bool? isturnon=turnoff;
+    if(isturnon!){
+      if(isFlashActive){
+        toggleflashlight();
+      }
+    }
   }
 }

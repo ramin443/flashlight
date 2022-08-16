@@ -1,4 +1,4 @@
-package com.flashlightapp.flashlight
+package com.pipertechnologies.flashlight
 
 import io.flutter.embedding.android.FlutterActivity
 

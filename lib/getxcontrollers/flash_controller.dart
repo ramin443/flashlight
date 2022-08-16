@@ -2,13 +2,17 @@ import 'dart:async';
 import 'package:battery_plus/battery_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:feather_icons/feather_icons.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flashlight/constants/ad_constants.dart';
 import 'package:flashlight/constants/color_constants.dart';
+import 'package:flashlight/constants/image_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:torch_controller/torch_controller.dart';
 import '../constants/font_constants.dart';
 
@@ -24,24 +28,41 @@ class FlashController extends GetxController {
   final torchController = TorchController();
   final InAppReview inAppReview = InAppReview.instance;
   late BannerAd bannerAd;
+  late InterstitialAd interstitialAd;
   late RewardedAd rewardedAd;
   bool isbanneradloaded = false;
   bool isrewardadloaded = false;
   int flashbuttontapped = 0;
+  final FirebaseAnalytics _analytics = FirebaseAnalytics();
+
+  Future sendAnalyticsEvent(
+      {String? eventName, String? clickevent}) async {
+    await _analytics.logEvent(
+      name: '${eventName}',
+      parameters: <String, dynamic>{
+        'clickEvent': "User has clicked"
+      },
+    );
+  }
 
   void incrementflashbuttontaps() async {
-    if (flashbuttontapped > 4) {
-      showRewardedAd();
+    if (flashbuttontapped > 5) {
+    //  showRewardedAd();
+      interstitialAd.show();
+      flashbuttontapped=0;
       //display popup app skippable in 5 seconds
+    }else{
+      flashbuttontapped++;
     }
-    flashbuttontapped++;
+    loadinterstitialad();
+    sendAnalyticsEvent(eventName: "flashbuttonclicks",clickevent: "Tapped");
     update();
   }
 
   void initializebanner() async {
     bannerAd = BannerAd(
         size: AdSize.banner,
-        adUnitId: BannerAd.testAdUnitId,
+        adUnitId: banneradunitid,
         listener:
             BannerAdListener(onAdLoaded: (ad) {}, onAdImpression: (ad) {}),
         request: AdRequest());
@@ -52,7 +73,7 @@ class FlashController extends GetxController {
 
   void loadrewardedad() {
     RewardedAd.load(
-        adUnitId: RewardedAd.testAdUnitId,
+        adUnitId: rewardadunitid,
         request: AdRequest(),
         rewardedAdLoadCallback:
             RewardedAdLoadCallback(onAdFailedToLoad: (LoadAdError error) {
@@ -60,6 +81,27 @@ class FlashController extends GetxController {
         }, onAdLoaded: (RewardedAd ad) {
           rewardedAd = ad;
         }));
+  }
+  void loadinterstitialad() {
+    InterstitialAd.load(adUnitId: interstitialadunitid,
+        request: AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+            onAdLoaded: oninterstitialadloaded,
+            onAdFailedToLoad: (LoadAdError error){
+        }));
+  }
+  void oninterstitialadloaded(InterstitialAd ad){
+    interstitialAd=ad;
+    interstitialAd.fullScreenContentCallback=
+        FullScreenContentCallback(
+          onAdDismissedFullScreenContent: (ad){
+            interstitialAd.dispose();
+          },
+          onAdFailedToShowFullScreenContent: (ad,error){
+            interstitialAd.dispose();
+          }
+
+        );
   }
   void showRewardedAd(){
     if(rewardedAd!=null){
@@ -80,6 +122,23 @@ class FlashController extends GetxController {
       rewardedAd.show(onUserEarnedReward: (AdWithoutView ad,RewardItem item){
 
       });
+    }
+  }
+  void showinterstitialad(){
+    if(interstitialAd!=null){
+      interstitialAd.fullScreenContentCallback=FullScreenContentCallback(
+        onAdShowedFullScreenContent: (InterstitialAd ad){
+        },
+        onAdDismissedFullScreenContent: (InterstitialAd ad){
+          ad.dispose();
+          loadinterstitialad();
+        },
+        onAdFailedToShowFullScreenContent: (InterstitialAd ad,AdError error){
+          ad.dispose();
+          loadinterstitialad();
+        }
+      );
+      interstitialAd.setImmersiveMode(true);
     }
   }
   void disposeads() async {
@@ -160,6 +219,8 @@ class FlashController extends GetxController {
           GestureDetector(
             onTap: () {
               if (!isFlashActive) {
+                sendAnalyticsEvent(eventName: "FlashMode",
+                    clickevent: "Tapped");
                 logflashbuttontap();
               }
               toggleflashlight();
@@ -251,29 +312,39 @@ class FlashController extends GetxController {
   Widget flashmodes(BuildContext context) {
     double screenwidth = MediaQuery.of(context).size.width;
     return Container(
+      margin: EdgeInsets.only(bottom: screenwidth*0.107),
       width: screenwidth,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           GestureDetector(
             onTap: () {
-              logtorchmode();
+              sendAnalyticsEvent(eventName: "TorchMode",
+                  clickevent: "Tapped");
+        //      logtorchmode();
               screenmodefalse();
             },
             child: Container(
               margin: EdgeInsets.only(right: screenwidth * 0.368),
-              child: Icon(
+              child:
+              Image.asset( screenmode
+                  ?darktorchimg:greentorchimg,
+              width: screenwidth * 0.0973,
+              )
+              /*Icon(
                 FeatherIcons.cloudLightning,
                 color: screenmode
                     ? Color(0xffE7F4FF).withOpacity(0.63)
                     : themegreencolor,
                 size: screenwidth * 0.0973,
-              ),
+              ),*/
             ),
           ),
           GestureDetector(
             onTap: () {
-              logscreenflashmode();
+     //         logscreenflashmode();
+              sendAnalyticsEvent(eventName: "FlashMode",
+                  clickevent: "Tapped");
               screenmodetrue();
             },
             child: Container(
@@ -450,6 +521,7 @@ class FlashController extends GetxController {
           .doc(DateFormat.yMMMMd('en_US').format(DateTime.now()))
           .set({"numberoftaps": 1});
     }
+
   }
 
   Widget banneradbottom(BuildContext context) {
@@ -461,5 +533,48 @@ class FlashController extends GetxController {
         ad: bannerAd,
       ),
     );
+  }
+  Future<bool> getswitchsound()async{
+    final prefs= await SharedPreferences.getInstance();
+    final switchsound=prefs.getBool('switchsound');
+    if(switchsound==null){
+      return true;
+    }
+    return switchsound;
+  }
+  Future<bool> getturnonatstartup()async{
+    final prefs= await SharedPreferences.getInstance();
+    final turnon=prefs.getBool('turnonatstartup');
+    if(turnon==null){
+      return true;
+    }
+    return turnon;
+  }
+  Future<bool> getturnoffatstartup()async{
+    final prefs= await SharedPreferences.getInstance();
+    final turnoff=prefs.getBool('turnoffatstartup');
+    if(turnoff==null){
+      return true;
+    }
+    return turnoff;
+  }
+
+  void turnonatstartup()async{
+    final prefs= await SharedPreferences.getInstance();
+    final turnoff=prefs.getBool('turnonatstartup');
+    bool? isturnon=turnoff;
+    if(isturnon!){
+      toggleflashlight();
+    }
+  }
+  void turnoffatstartup()async{
+    final prefs= await SharedPreferences.getInstance();
+    final turnoff=prefs.getBool('turnoffatstartup');
+    bool? isturnon=turnoff;
+    if(isturnon!){
+      if(isFlashActive){
+        toggleflashlight();
+      }
+    }
   }
 }

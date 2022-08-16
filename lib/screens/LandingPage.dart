@@ -29,6 +29,7 @@ class LandingPage extends StatelessWidget {
           }
           flashController.initializebanner();
           flashController.loadrewardedad();
+          flashController.loadinterstitialad();
           flashController.turnonatstartup();
         },
         dispose: (v){

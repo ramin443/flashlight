@@ -3,7 +3,9 @@ import 'package:battery_plus/battery_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:feather_icons/feather_icons.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flashlight/constants/ad_constants.dart';
 import 'package:flashlight/constants/color_constants.dart';
+import 'package:flashlight/constants/image_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:get/get.dart';
@@ -26,6 +28,7 @@ class FlashController extends GetxController {
   final torchController = TorchController();
   final InAppReview inAppReview = InAppReview.instance;
   late BannerAd bannerAd;
+  late InterstitialAd interstitialAd;
   late RewardedAd rewardedAd;
   bool isbanneradloaded = false;
   bool isrewardadloaded = false;
@@ -43,11 +46,15 @@ class FlashController extends GetxController {
   }
 
   void incrementflashbuttontaps() async {
-    if (flashbuttontapped > 4) {
-      showRewardedAd();
+    if (flashbuttontapped > 5) {
+    //  showRewardedAd();
+      interstitialAd.show();
+      flashbuttontapped=0;
       //display popup app skippable in 5 seconds
+    }else{
+      flashbuttontapped++;
     }
-    flashbuttontapped++;
+    loadinterstitialad();
     sendAnalyticsEvent(eventName: "flashbuttonclicks",clickevent: "Tapped");
     update();
   }
@@ -55,7 +62,7 @@ class FlashController extends GetxController {
   void initializebanner() async {
     bannerAd = BannerAd(
         size: AdSize.banner,
-        adUnitId: BannerAd.testAdUnitId,
+        adUnitId: banneradunitid,
         listener:
             BannerAdListener(onAdLoaded: (ad) {}, onAdImpression: (ad) {}),
         request: AdRequest());
@@ -66,7 +73,7 @@ class FlashController extends GetxController {
 
   void loadrewardedad() {
     RewardedAd.load(
-        adUnitId: RewardedAd.testAdUnitId,
+        adUnitId: rewardadunitid,
         request: AdRequest(),
         rewardedAdLoadCallback:
             RewardedAdLoadCallback(onAdFailedToLoad: (LoadAdError error) {
@@ -74,6 +81,27 @@ class FlashController extends GetxController {
         }, onAdLoaded: (RewardedAd ad) {
           rewardedAd = ad;
         }));
+  }
+  void loadinterstitialad() {
+    InterstitialAd.load(adUnitId: interstitialadunitid,
+        request: AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+            onAdLoaded: oninterstitialadloaded,
+            onAdFailedToLoad: (LoadAdError error){
+        }));
+  }
+  void oninterstitialadloaded(InterstitialAd ad){
+    interstitialAd=ad;
+    interstitialAd.fullScreenContentCallback=
+        FullScreenContentCallback(
+          onAdDismissedFullScreenContent: (ad){
+            interstitialAd.dispose();
+          },
+          onAdFailedToShowFullScreenContent: (ad,error){
+            interstitialAd.dispose();
+          }
+
+        );
   }
   void showRewardedAd(){
     if(rewardedAd!=null){
@@ -94,6 +122,23 @@ class FlashController extends GetxController {
       rewardedAd.show(onUserEarnedReward: (AdWithoutView ad,RewardItem item){
 
       });
+    }
+  }
+  void showinterstitialad(){
+    if(interstitialAd!=null){
+      interstitialAd.fullScreenContentCallback=FullScreenContentCallback(
+        onAdShowedFullScreenContent: (InterstitialAd ad){
+        },
+        onAdDismissedFullScreenContent: (InterstitialAd ad){
+          ad.dispose();
+          loadinterstitialad();
+        },
+        onAdFailedToShowFullScreenContent: (InterstitialAd ad,AdError error){
+          ad.dispose();
+          loadinterstitialad();
+        }
+      );
+      interstitialAd.setImmersiveMode(true);
     }
   }
   void disposeads() async {
@@ -267,6 +312,7 @@ class FlashController extends GetxController {
   Widget flashmodes(BuildContext context) {
     double screenwidth = MediaQuery.of(context).size.width;
     return Container(
+      margin: EdgeInsets.only(bottom: screenwidth*0.107),
       width: screenwidth,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -280,13 +326,18 @@ class FlashController extends GetxController {
             },
             child: Container(
               margin: EdgeInsets.only(right: screenwidth * 0.368),
-              child: Icon(
+              child:
+              Image.asset( screenmode
+                  ?darktorchimg:greentorchimg,
+              width: screenwidth * 0.0973,
+              )
+              /*Icon(
                 FeatherIcons.cloudLightning,
                 color: screenmode
                     ? Color(0xffE7F4FF).withOpacity(0.63)
                     : themegreencolor,
                 size: screenwidth * 0.0973,
-              ),
+              ),*/
             ),
           ),
           GestureDetector(
